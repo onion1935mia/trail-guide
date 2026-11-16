@@ -1,0 +1,576 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trans Lantau 100K 유령 레이스</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#fbfaf7;--card:#ffffff;--line:#e4e0d8;--text:#24211c;--muted:#767065;--accent:#3a5a9b;
+  --sky-night:#c9cfdb;--sky-dawn:#f1e2d0;--sky-day:#e4edf3;--sky-dusk:#efd9c9;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#171915;--card:#1f221d;--line:#333730;--text:#e8e5de;--muted:#9b968c;--accent:#8fa8db;
+    --sky-night:#12151c;--sky-dawn:#2a2622;--sky-day:#1f2830;--sky-dusk:#2b2420;
+  }
+}
+body{margin:0;padding:32px 20px 72px;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif;word-break:keep-all;overflow-wrap:anywhere}
+main{max-width:680px;margin:0 auto}
+h1{font-size:22px;font-weight:600;letter-spacing:-0.01em;margin:0 0 4px}
+h2{font-size:18px;font-weight:600;letter-spacing:-0.01em;margin:40px 0 4px}
+h3{font-size:16px;font-weight:600;letter-spacing:-0.01em;margin:28px 0 8px}
+.races{display:flex;gap:6px;overflow-x:auto;padding:2px 0;margin:0 0 10px}
+.races[hidden]{display:none}
+.races button{flex:0 0 auto;font-size:14px;padding:6px 10px;white-space:nowrap}
+.races button.on{border:2px solid var(--accent);color:var(--accent);font-weight:600;padding:5px 9px}
+#rtag{margin:0 0 12px}
+.meta{color:var(--muted);font-size:14px;margin:0 0 16px}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+#scene{display:block;width:100%;height:clamp(240px,68vw,380px)}
+.view{position:relative}
+#shot{position:absolute;top:8px;left:50%;transform:translateX(-50%);margin:0;max-width:92%;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;opacity:0;transition:opacity .35s;pointer-events:none}
+#shot.on{opacity:1}
+#shot img{display:block;width:auto;height:auto;max-width:100%;max-height:clamp(130px,38vw,215px)}
+#shot figcaption{font-size:12px;line-height:1.4;padding:3px 8px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;align-items:start}
+.shots figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.shots img{display:block;width:100%;height:auto}
+.js .shots img{cursor:pointer}
+.shots figcaption{font-size:13px;color:var(--muted);padding:4px 8px}
+.panel{padding:12px 14px 14px;display:grid;gap:10px;border-top:1px solid var(--line)}
+.now{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.now strong{color:var(--text);font-weight:600;font-size:15px}
+.rows{display:grid;gap:4px;margin:0;padding:0;list-style:none}
+.rows li{display:flex;align-items:center;gap:2px 8px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.rows li span[id^=r]{white-space:nowrap}
+.mark{width:12px;height:12px;border-radius:50%;flex:0 0 auto;border:2px solid var(--text)}
+.mark.me{background:var(--accent);border-color:var(--accent)}
+.who{font-weight:600;min-width:2.8em}
+.note{color:var(--muted);font-size:13px}
+#mini{display:block;width:100%;height:56px;touch-action:none;cursor:pointer}
+input[type=range]{display:block;width:100%;margin:0;min-height:36px;accent-color:var(--accent)}
+.ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+button,select{font:inherit;min-height:36px;padding:7px 12px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:7px;cursor:pointer}
+#play{min-width:84px;color:var(--accent);font-weight:600}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0}
+.chips button{flex:0 0 auto;font-size:13px;padding:6px 10px;white-space:nowrap}
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums;overflow-wrap:break-word}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{font-weight:600}
+td.km{color:var(--muted)}
+ul.notes{margin:0;padding-left:20px;color:var(--muted);font-size:14px;display:grid;gap:4px}
+html:not(.js) .stage,html:not(.js) .races,html:not(.js) #rtag{display:none}
+.js .race{display:none}
+.js .race.on{display:block}
+.js .race>h2,.js .race>.tag{display:none}
+@media (max-width:900px){th,td{word-break:normal;overflow-wrap:anywhere}}
+@media (max-width:700px){body{padding:20px 14px 64px}th,td{padding:8px 8px}}
+@media print{.ctl,.chips,#seek,.races,#rtag,#shot{display:none}.js .race,.js .race>h2,.js .race>.tag{display:block !important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Trans Lantau 100K 유령 레이스</h1>
+  <p class="meta">지난 해의 나와 같은 코스를 같이 달립니다.</p>
+
+  <div id="app">
+  <nav class="races" id="races" aria-label="대회 고르기"></nav>
+  <p class="meta" id="rtag"></p>
+  <div class="stage">
+    <div class="view">
+      <canvas id="scene" role="img" aria-label="능선 위를 달리는 여러 해의 나"></canvas>
+      <figure id="shot" aria-hidden="true"><img id="shotimg" alt=""><figcaption id="shotcap"></figcaption></figure>
+    </div>
+    <div class="panel">
+      <div class="now"><strong id="place">0.0km</strong><span id="cap"></span><span id="clock"></span></div>
+      <ul class="rows" id="rows"></ul>
+      <div>
+        <canvas id="mini" aria-hidden="true"></canvas>
+        <input type="range" id="seek" min="0" max="100" step="100" value="0" aria-label="코스 위 위치">
+      </div>
+      <div class="ctl">
+        <button type="button" id="play">재생</button>
+        <select id="speed" aria-label="재생 빠르기">
+          <option value="60">빠르게 (1분)</option>
+          <option value="180" selected>보통 (3분)</option>
+          <option value="540">천천히 (9분)</option>
+        </select>
+      </div>
+      <div class="chips" id="chips" aria-label="장면으로 건너뛰기"></div>
+    </div>
+  </div>
+
+  <section class="race" id="race-translantau">
+    <h2>Trans Lantau 100K</h2>
+    <p class="meta tag">2026년의 내가 달리고, 같은 방향으로 겹치는 길에서 2019 · 2025년의 내가 나타납니다.</p>
+    <h3>겹친 구간에서 걸린 시간</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>구간</th><th>2026년</th><th>그때의 나</th><th>차이</th></tr></thead>
+        <tbody>
+        <tr><td>3.5~10.6km <span class="km">7.1km</span></td><td>1:14:06</td><td>2019년 1:38:05</td><td>2026년이 23분 59초 빠름</td></tr>
+        <tr><td>10.4~22.3km <span class="km">11.9km</span></td><td>2:03:45</td><td>2025년 2:19:22</td><td>2026년이 15분 37초 빠름</td></tr>
+        <tr><td>25.9~28.4km <span class="km">2.5km</span></td><td>0:31:46</td><td>2019년 0:32:33</td><td>2026년이 0분 47초 빠름</td></tr>
+        <tr><td>28.9~36.2km <span class="km">7.3km</span></td><td>1:43:03</td><td>2019년 1:49:14</td><td>2026년이 6분 11초 빠름</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>읽을 때 알아둘 것</h3>
+    <ul class="notes">
+      <li>시각은 모두 출발부터 흐른 시간입니다. 실제 출발 시각은 2019년 23:30, 2025년 08:30, 2026년 19:30입니다. 하늘 색은 2026년의 시계를 따르고, 해 뜨고 지는 시각은 그날 그곳의 계산값입니다.</li>
+      <li>기준 코스는 주최 측 GPX(102.7km)입니다. 기록의 위치는 GPS로 코스의 가장 가까운 자리에 붙였고, 100m 간격으로 읽습니다.</li>
+      <li>2026년 기록은 코스 40.2km에서 멈췄습니다(출발 뒤 7:51:26). 그 뒤 62.5km는 달리지 않은 길이라 점선으로 그립니다.</li>
+      <li>2019년 기록(105.5km, 27:27:19)은 길이나 방향이 달라, 같은 방향으로 60m 안에서 겹치는 구간에서만 나타납니다. 구간에 들어설 때 같은 선에서 함께 출발한 것으로 놓습니다. 그 구간까지 이미 달린 거리가 달라(3.5km 지점은 그해 23km째, 25.9km 지점은 그해 42km째, 28.9km 지점은 그해 51km째) 같은 조건의 비교는 아닙니다.</li>
+      <li>2025년 기록(76.8km, 16:18:08)은 길이나 방향이 달라, 같은 방향으로 60m 안에서 겹치는 구간에서만 나타납니다. 구간에 들어설 때 같은 선에서 함께 출발한 것으로 놓습니다. 그 구간까지 이미 달린 거리가 달라(10.4km 지점은 그해 24km째) 같은 조건의 비교는 아닙니다.</li>
+      <li>전체 코스 그림 위쪽의 가는 줄은 지난 해의 내가 나타나는 구간입니다.</li>
+      <li>CP 위치는 주최 측 고도표의 거리(T1 10.5km, T2 17km, T3 23.1km, T4 40.2km)를 그대로 썼습니다. 비는 대회 내내 온 것으로 그렸고, 폭우·진흙은 회고의 31km쯤을 썼습니다.</li>
+      <li>2025년 기록은 80K 코스, 2019년 기록은 그해의 100K 코스입니다.</li>
+    </ul>
+  </section>
+  </div>
+</main>
+<script>
+(function(){
+  var ALL = [{"title":"Trans Lantau 100K 유령 레이스","tagline":"2026년의 내가 달리고, 같은 방향으로 겹치는 길에서 2019 · 2025년의 내가 나타납니다.","me":"2026","ghosts":["2025","2019"],"end":40200,"altMin":0,"altMax":1000,"sun":[6.58,17.7],"rainFrom":0,"chapters":[{"d":0,"label":"출발"},{"d":3500,"label":"2019의 나 등장"},{"d":10400,"label":"2025의 나 등장"},{"d":10500,"label":"T1 Pak Kung Au"},{"d":17000,"label":"T2 Shui Hau"},{"d":23100,"label":"T3 Shek Pik"},{"d":25900,"label":"2019의 나 등장"},{"d":28900,"label":"2019의 나 등장"},{"d":31000,"label":"폭우 · 진흙"},{"d":40200,"label":"T4 Tai O · 멈춘 곳"}],"step":100,"total":102700,"alt":[5,5,0,3,7,10,11,20,19,9,14,15,21,21,11,8,6,4,7,7,7,8,6,5,4,7,15,20,32,42,57,77,104,120,124,136,136,132,146,152,151,168,171,197,213,226,237,243,249,246,252,258,259,264,260,272,272,274,282,278,287,294,308,316,314,316,340,341,346,356,362,374,376,373,369,369,365,354,350,345,346,350,357,363,358,356,366,358,358,359,358,362,366,369,365,357,362,358,360,368,356,352,345,347,340,333,336,339,342,338,338,340,339,332,336,333,327,320,313,308,310,309,306,310,317,334,349,337,299,256,214,181,146,132,112,108,110,108,106,104,104,106,109,110,110,107,105,103,100,102,103,104,106,106,103,102,101,105,105,108,107,100,79,71,53,42,37,31,17,15,18,13,12,15,17,27,38,43,48,49,55,58,59,48,27,12,14,37,57,70,69,49,47,43,40,43,38,42,43,39,38,35,35,33,44,49,49,51,51,55,56,45,25,9,8,5,5,14,27,39,39,48,62,60,49,44,40,48,46,43,39,53,69,68,69,75,85,87,78,70,70,79,94,95,94,78,74,81,83,101,131,145,158,166,200,221,251,254,294,298,298,297,292,293,289,286,282,285,275,270,276,267,276,283,289,291,289,292,284,307,298,290,299,301,300,310,325,350,361,372,385,384,380,374,371,364,357,357,336,327,321,314,304,289,268,249,238,254,265,270,280,292,294,304,306,302,300,296,300,311,317,315,300,291,276,246,217,203,209,191,171,150,127,93,49,21,9,24,34,34,31,26,27,18,15,24,23,18,5,5,4,5,1,0,0,0,0,0,0,6,2,6,7,2,3,4,3,7,8,7,8,9,5,5,15,38,44,49,48,45,49,57,56,30,16,3,3,0,0,0,0,0,0,0,0,0,1,1,1,0,0,9,8,2,4,5,5,2,0,1,1,2,16,45,73,101,129,155,165,167,173,182,183,190,193,195,199,206,209,214,214,226,248,269,288,298,303,319,319,328,336,337,344,352,350,352,362,369,396,422,427,431,436,433,421,409,413,418,385,351,333,339,346,366,386,394,382,357,336,319,296,281,272,259,266,276,288,297,305,315,320,323,325,333,327,324,325,332,347,363,382,390,417,433,440,441,434,432,429,428,428,430,438,441,436,436,438,443,443,444,445,447,453,454,454,459,459,475,500,530,577,604,637,694,751,790,824,863,892,888,853,817,799,772,729,711,710,698,674,630,616,610,598,565,512,506,496,494,477,449,443,440,420,403,373,367,340,334,335,347,346,350,354,369,366,356,363,356,357,365,368,364,357,353,366,359,360,361,357,356,366,360,357,351,343,351,346,360,362,372,368,373,374,373,361,354,351,343,343,320,318,317,306,293,290,276,283,279,271,271,261,261,267,259,255,252,246,247,244,238,226,217,204,178,168,155,150,153,140,131,131,123,137,149,172,184,194,209,217,225,265,259,246,212,200,194,193,189,176,169,164,164,159,141,125,109,82,45,44,44,42,41,30,21,17,11,5,4,15,26,23,25,26,28,31,40,46,56,54,44,40,31,24,17,12,14,18,20,38,46,43,39,38,61,80,90,90,93,99,112,125,127,133,134,144,149,152,149,139,143,151,150,146,151,156,159,167,161,165,152,150,143,141,128,132,138,138,126,123,115,116,116,108,104,100,88,73,78,80,72,64,62,54,49,39,36,37,50,53,70,69,70,72,78,93,103,118,124,147,159,192,195,213,252,259,277,268,271,273,245,222,244,267,270,254,232,205,191,166,147,121,89,75,69,55,43,25,11,6,20,17,2,0,0,3,13,12,12,23,24,19,16,13,13,14,18,15,3,6,7,21,32,58,82,97,107,100,100,104,113,111,100,95,88,75,52,42,32,20,18,21,19,19,28,29,23,24,26,32,35,19,5,5,3,1,2,5,3,4,0,0,0,3,1,1,7,7,9,8,8,8,9,18,36,79,92,119,139,140,156,169,187,203,227,235,219,199,180,169,152,139,123,115,107,101,102,121,133,144,161,173,173,166,165,175,172,174,173,168,170,174,170,148,145,141,132,124,143,156,181,180,182,186,190,190,182,172,171,170,177,174,171,171,150,137,133,124,114,113,96,89,73,60,52,47,34,28,28,10,7,10,11,10,14,14,22,36,58,100,141,175,192,208,207,189,196,233,257,283,307,343,383,401,448,455,442,440,437,437,435,427,408,386,362,352,351,340,333,325,313,312,310,298,275,265,257,251,247,234,222,207,188,180,171,167,167,179,178,174,172,169,168,165,165,165,147,124,99,77,60,52,53,42,29,21,15,17,22,16,9,8,4,3,3,3,3,4,4],"runs":{"2026":{"date":"2026-11-13","start":"19:30:06","elapsed":28286,"t":[0,27,60,97,129,160,196,235,288,321,353,396,433,468,500,536,566,602,631,670,704,740,774,804,837,867,939,973,1053,1113,1202,1271,1370,1451,1514,1564,1617,1675,1720,1780,1825,1879,1962,2041,2124,2191,2274,2344,2403,2471,2528,2610,2671,2736,2804,2848,2938,2985,3046,3102,3164,3241,3298,3372,3440,3506,3600,3668,3717,3787,3870,3922,3993,4050,4104,4185,4233,4300,4346,4421,4474,4524,4584,4653,4720,4774,4828,4892,4949,5001,5049,5110,5179,5236,5291,5346,5399,5458,5528,5613,5686,5748,5799,5853,5902,5955,6010,6068,6125,6187,6230,6280,6325,6386,6444,6492,6539,6579,6637,6713,6814,6873,6938,6992,7040,7120,7202,7277,7354,7436,7515,7595,7686,7740,7813,7856,7902,7944,7991,8034,8077,8119,8164,8203,8244,8285,8326,8369,8407,8450,8488,8533,8574,8612,8653,8696,8735,8780,8821,8868,8907,8945,9007,9083,9159,9230,9281,9333,9395,9471,9526,9572,9611,9886,9960,10023,10097,10169,10231,10280,10317,10377,10430,10482,10553,10653,10719,10857,10954,11078,11152,11220,11304,11359,11414,11470,11526,11586,11648,11712,11778,11848,11919,11974,12052,12133,12190,12251,12308,12369,12465,12547,12613,12674,12724,12779,12828,12887,12988,13069,13132,13208,13278,13327,13374,13418,13460,13506,13558,13601,13642,13702,13933,13996,14054,14127,14194,14260,14309,14350,14397,14463,14552,14608,14649,14694,14745,14788,14838,14937,15109,15197,15306,15441,15553,15700,15827,15970,16059,16158,16227,16296,16356,16432,16522,16583,16642,16714,16787,16895,16978,17044,17110,17181,17243,17317,17382,17467,17537,17663,17766,17835,17906,18001,18064,18178,18281,18380,18493,18597,18716,18771,18834,18903,18996,19060,19141,19242,19355,19456,19533,19617,19688,19777,19884,20029,20139,20254,20375,20487,20571,20695,20797,20908,21001,21092,21170,21257,21348,21467,21558,21661,21757,21853,21943,22059,22153,22272,22382,22467,22567,22654,22749,22912,23052,23203,23295,23358,23419,23474,23535,23613,23663,23714,23762,23817,23879,23932,23990,24037,24103,24164,24224,24289,24330,24380,24428,24473,24523,24579,24632,24681,24780,24825,24880,24924,24972,25030,25081,25133,25181,25244,25305,25375,25443,25714,25806,25965,26043,26107,26177,26282,26385,26504,26608,26729,26784,26844,26917,26964,27027,27079,27144,27207,27263,27327,27372,27449,27510,27561,27624,27668,27725],"hr":[89,112,143,147,151,155,146,150,157,153,154,158,157,157,156,154,151,152,152,157,155,156,155,153,155,155,153,152,159,146,163,162,159,161,162,156,157,155,156,158,155,159,157,161,161,157,152,151,153,153,158,154,153,153,152,154,154,152,150,151,153,152,155,157,154,157,153,157,154,155,156,157,150,153,154,149,156,160,153,146,153,153,156,152,155,153,153,156,149,152,148,153,152,152,141,139,145,147,147,150,139,142,143,145,141,136,142,149,146,150,148,145,146,149,141,146,142,145,143,149,153,146,152,152,151,154,150,145,141,146,151,148,146,143,140,143,150,150,150,149,149,148,149,147,147,149,148,146,148,149,147,145,149,147,147,152,147,146,146,145,144,147,132,142,130,125,137,138,130,131,141,141,140,120,129,136,137,143,139,140,141,140,139,137,134,128,140,150,144,141,137,124,122,140,139,130,136,143,138,137,127,129,143,134,139,133,131,138,143,140,142,126,135,138,138,142,140,134,141,135,134,137,136,132,132,134,136,137,135,136,136,130,110,124,135,136,130,128,125,125,134,134,134,127,128,127,132,136,137,140,137,135,135,136,136,139,136,136,134,132,121,127,129,127,131,132,131,128,127,137,135,128,134,132,135,134,130,134,137,127,133,137,132,137,139,137,134,134,133,135,136,127,124,124,131,128,121,135,120,116,121,117,126,121,120,120,119,132,130,127,126,130,124,123,126,113,114,112,129,130,116,122,101,92,86,84,102,98,128,112,92,88,83,113,89,120,151,152,139,122,120,129,121,121,124,124,120,121,120,124,131,117,125,125,126,130,129,128,128,123,119,117,115,122,123,124,129,130,125,125,123,116,116,112,120,119,116,119,112,114,118,126,111,106,107,114,118,113,119,121,111,112,112,111,114,109,119,106,111,119,122,123,120],"diff":[]},"2019":{"date":"2019-03-01","start":"23:30:12","elapsed":98839,"sections":[{"a":3500,"b":10600,"t":[14897,14993,15080,15150,15234,15298,15358,15465,15573,15687,15785,15888,15976,16042,16122,16204,16308,16388,16477,16561,16623,16710,16791,16871,16940,17046,17127,17208,17301,17378,17475,17578,17681,17761,17832,17934,18004,18075,18161,18243,18322,18388,18462,18529,18611,18682,18748,18825,18925,19007,19090,19174,19249,19318,19370,19432,19494,19575,19643,19714,19785,19845,19916,19997,20076,20180,20242,20313,20380,20435,20667,20782],"before":22968},{"a":25900,"b":28400,"t":[33320,33381,33478,33551,33649,33742,33809,33865,33932,34002,34109,34201,34256,34326,34395,34460,34537,34596,34683,34755,34861,34973,35042,35115,35200,35273],"before":42047},{"a":28900,"b":36200,"t":[41666,41841,41914,41998,42091,42195,42313,42382,42497,42597,42682,42753,42841,42913,42992,43096,43209,43313,43446,43585,43696,43791,43881,43995,44109,44197,44278,44358,44403,44500,44635,44713,44792,44848,44916,44994,45074,45143,45203,45314,45390,45482,45557,45656,45800,45941,46091,46195,46292,46362,46437,46519,46606,46671,46742,46806,46867,46943,47027,47103,47169,47244,47310,47550,47623,47698,47762,47828,47893,47969,48028,48096,48165,48220],"before":50847}]},"2025":{"date":"2025-11-15","start":"08:30:04","elapsed":58688,"sections":[{"a":10400,"b":22300,"t":[17778,18360,18452,18507,18567,18634,18678,18727,18782,18840,18888,18937,18984,19026,19078,19159,19269,19345,19411,19480,19532,19616,19697,19774,19846,19938,20028,20123,20211,20273,20335,20382,20426,20477,20527,20575,20631,20674,20720,20763,20812,20855,20899,20946,20991,21030,21076,21124,21167,21209,21256,21301,21348,21388,21439,21482,21531,21571,21637,21703,21770,21839,21883,21929,21982,22039,22086,22161,22805,22890,22963,23032,23109,23179,23236,23282,23325,23382,23433,23483,23554,23632,23699,23837,23951,24057,24130,24187,24265,24315,24359,24413,24464,24529,24588,24632,24695,24754,24822,24874,24948,25021,25073,25129,25182,25247,25325,25398,25458,25522,25569,25618,25666,25716,25813,25891,25956,26028,26092,26140],"before":23892}]}},"slug":"translantau","name":"Trans Lantau 100K","short":"Trans Lantau"}];
+  var $ = function(id){ return document.getElementById(id); };
+  var live = null, current = null;
+
+  // 대회 하나를 화면에 올린다. signal이 끊기면 이 대회의 듣는 귀와 재생이 모두 멈춘다.
+  function mount(D, signal){
+  var on = {signal: signal};
+  var STEP = D.step, TOTAL = D.total, ALT = D.alt, N = ALT.length, RUNS = D.runs;
+  var ME = D.me, GHOSTS = D.ghosts;
+  var END = D.end, DNF = END < TOTAL;        // 내가 닿은 마지막 자리. 완주면 코스 끝
+  var MY_END = RUNS[ME].elapsed;
+  var T_END = MY_END;
+  GHOSTS.forEach(function(y){ if (!RUNS[y].sections) T_END = Math.max(T_END, RUNS[y].elapsed); });
+  var ALT_MAX = D.altMax, ALT_MIN = D.altMin || 0, SUN = D.sun;
+  var RAIN_FROM = D.rainFrom == null ? Infinity : D.rainFrom;
+
+  var scene = $('scene'), mini = $('mini'), seek = $('seek');
+  var t = 0, playing = false, last = 0, C = {}, dragging = false;
+  // 사진은 이 대회 구역의 <img>에서 읽는다(같은 그림을 두 번 싣지 않으려고)
+  var SHOTS = [].map.call(document.querySelectorAll('#race-' + D.slug + ' .shots img'), function(im){
+    return {d: +im.dataset.d, cap: im.dataset.cap, el: im};
+  }), shown = null;
+
+  function startSec(y){ var p = RUNS[y].start.split(':'); return (+p[0]) * 3600 + (+p[1]) * 60 + (+p[2]); }
+  function interp(arr, d){
+    var n = arr.length, x = Math.max(0, Math.min(n - 1, d / STEP)), i = Math.min(n - 2, Math.floor(x));
+    return arr[i] + (arr[i + 1] - arr[i]) * (x - i);
+  }
+  // 오름차순 시각 배열에서 time이 몇 번째 칸인지(소수)
+  function invert(a, time){
+    var n = a.length;
+    if (time <= a[0]) return 0;
+    if (time >= a[n - 1]) return n - 1;
+    var lo = 0, hi = n - 1;
+    while (hi - lo > 1){ var m = (lo + hi) >> 1; if (a[m] <= time) lo = m; else hi = m; }
+    var span = a[hi] - a[lo];
+    return lo + (span > 0 ? (time - a[lo]) / span : 0);
+  }
+  function altAt(d){ return interp(ALT, d); }
+  function timeAt(y, d){ return interp(RUNS[y].t, d); }
+  function hrAt(y, d){ var a = RUNS[y].hr; return a ? a[Math.max(0, Math.min(a.length - 1, Math.round(d / STEP)))] : null; }
+  function posAt(y, time){ return invert(RUNS[y].t, time) * STEP; }
+  function inDiff(y, d){
+    var r = RUNS[y].diff || [];
+    for (var i = 0; i < r.length; i++) if (d >= r[i][0] && d <= r[i][1]) return true;
+    return false;
+  }
+  // 유령의 지금 상태. 전 구간 유령은 출발부터 같이 달리고, 구간 유령은 겹치는 길에 내가 들어설 때 같은 선에서 출발한다.
+  // gap은 같은 자리를 지난 시각 차이(초). 음수면 유령이 앞.
+  function ghost(y, time){
+    var r = RUNS[y], dMe = posAt(ME, time), tMe = Math.min(time, MY_END), d;
+    if (!r.sections){
+      d = posAt(y, time);
+      if (r.end != null){        // 기록이 중간에 끝난 해: 끝난 뒤에는 사라진다
+        if (time > r.t[r.t.length - 1]) return {on: false, over: true};
+        return {on: true, d: d, gap: dMe <= r.end ? timeAt(y, dMe) - tMe : null, done: false, diff: inDiff(y, d)};
+      }
+      return {on: true, d: d, gap: timeAt(y, dMe) - tMe, done: d >= TOTAL, diff: inDiff(y, dMe) || (d < TOTAL && inDiff(y, d))};
+    }
+    var cur = null, prev = null, next = null;
+    for (var i = 0; i < r.sections.length; i++){
+      var s = r.sections[i], t0 = timeAt(ME, s.a);
+      if (time < t0){ next = s; break; }
+      if (cur) prev = cur;
+      var until = t0 + Math.max(timeAt(ME, s.b) - t0, s.t[s.t.length - 1] - s.t[0]);
+      if (time <= until || (time >= MY_END && s.b >= END)) cur = s; else { cur = null; prev = s; }
+    }
+    if (!cur) return {on: false, prev: prev, next: next};
+    var e0 = timeAt(ME, cur.a), at = Math.min(dMe, cur.b);
+    d = cur.a + invert(cur.t, cur.t[0] + (time - e0)) * STEP;
+    return {on: true, sec: cur, d: d, gap: (interp(cur.t, at - cur.a) - cur.t[0]) - (timeAt(ME, at) - e0), done: d >= cur.b, meOut: dMe >= cur.b};
+  }
+  function secResult(y, s){ return (s.t[s.t.length - 1] - s.t[0]) - (timeAt(ME, s.b) - timeAt(ME, s.a)); }
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function hms(s){ s = Math.max(0, Math.round(s)); return Math.floor(s / 3600) + ':' + pad(Math.floor(s % 3600 / 60)) + ':' + pad(s % 60); }
+  function span(s){
+    s = Math.round(Math.abs(s));
+    if (s < 60) return s + '초';
+    if (s < 3600) return Math.floor(s / 60) + '분 ' + pad(s % 60) + '초';
+    return Math.floor(s / 3600) + '시간 ' + pad(Math.floor(s % 3600 / 60)) + '분';
+  }
+  function gapText(g){ return Math.abs(g) < 1 ? '나란히' : span(g) + (g < 0 ? ' 앞' : ' 뒤'); }
+  function clockHour(time){ return ((startSec(ME) + time) / 3600) % 24; }
+  function clockText(time){
+    var s = (startSec(ME) + time) % 86400, h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
+    var part = h < 5 ? '밤' : h < 12 ? '오전' : h < 18 ? '오후' : h < 21 ? '저녁' : '밤';
+    var h12 = h % 12 === 0 ? 12 : h % 12;
+    return part + ' ' + h12 + ':' + pad(m);
+  }
+  function rnd(i){ var v = Math.sin(i * 12.9898 + 4.1) * 43758.5453; return v - Math.floor(v); }
+  function km(d){ return (d / 1000).toFixed(1) + 'km'; }
+  function kmRange(s){ return (s.a / 1000).toFixed(1) + '~' + km(s.b); }
+
+  function hex(c){
+    c = c.trim().replace('#', '');
+    if (c.length === 3) c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
+    return [parseInt(c.slice(0, 2), 16), parseInt(c.slice(2, 4), 16), parseInt(c.slice(4, 6), 16)];
+  }
+  function mix(a, b, f){
+    return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * f) + ',' + Math.round(a[1] + (b[1] - a[1]) * f) + ',' + Math.round(a[2] + (b[2] - a[2]) * f) + ')';
+  }
+  function readTokens(){
+    var cs = getComputedStyle(document.documentElement);
+    ['bg', 'card', 'line', 'text', 'muted', 'accent'].forEach(function(k){ C[k] = cs.getPropertyValue('--' + k).trim(); });
+    ['night', 'dawn', 'day', 'dusk'].forEach(function(k){ C[k] = hex(cs.getPropertyValue('--sky-' + k)); });
+  }
+  // SUN = [해 뜨는 시, 해 지는 시] (대회 날 그곳의 어림값)
+  var SKY = [[0, 'night'], [SUN[0] - 0.57, 'night'], [SUN[0], 'dawn'], [SUN[0] + 0.83, 'day'], [SUN[1] - 0.8, 'day'], [SUN[1], 'dusk'], [SUN[1] + 0.8, 'night'], [24, 'night']];
+  function skyAt(h){
+    for (var i = 0; i < SKY.length - 1; i++){
+      if (h >= SKY[i][0] && h <= SKY[i + 1][0]){
+        var f = (h - SKY[i][0]) / (SKY[i + 1][0] - SKY[i][0] || 1);
+        return mix(C[SKY[i][1]], C[SKY[i + 1][1]], f);
+      }
+    }
+    return mix(C.night, C.night, 0);
+  }
+
+  function fit(cv){
+    var r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    var w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+    if (cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return {ctx: ctx, W: r.width, H: r.height};
+  }
+  function box(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
+  }
+  function pill(ctx, text, cx, cy, W, align){
+    ctx.font = '12px system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif';
+    var w = ctx.measureText(text).width + 12, h = 20;
+    var x = align === 'left' ? cx : align === 'right' ? cx - w : cx - w / 2;
+    x = Math.max(4, Math.min(W - w - 4, x));
+    box(ctx, x, cy - h / 2, w, h, 5);
+    ctx.fillStyle = C.card; ctx.fill();
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = C.text; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, x + 6, cy + 0.5);
+  }
+
+  function drawScene(){
+    var f = fit(scene), ctx = f.ctx, W = f.W, H = f.H;
+    var strip = 24, top = 84, bottom = H - strip - 34;
+    var mPerPx = (ALT_MAX - ALT_MIN) / (bottom - top), winM = W * mPerPx * 2;
+    var dMe = posAt(ME, t), left = dMe - winM * 0.4;
+    var X = function(d){ return (d - left) / winM * W; };
+    var Y = function(a){ return bottom - (a - ALT_MIN) / (ALT_MAX - ALT_MIN) * (bottom - top); };
+    var h = clockHour(t);
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = skyAt(h); ctx.fillRect(0, 0, W, H - strip);
+
+    var day = h > SUN[0] && h < SUN[1], raining = dMe >= RAIN_FROM && t < MY_END;
+    if (raining){
+      // 비 오는 동안에는 해·달·별을 그리지 않는다
+    } else if (day){
+      var p = (h - SUN[0]) / (SUN[1] - SUN[0]);
+      ctx.beginPath(); ctx.arc(W * (0.1 + 0.8 * p), 64 - Math.sin(p * Math.PI) * 40, 9, 0, Math.PI * 2);
+      ctx.strokeStyle = C.muted; ctx.lineWidth = 1.5; ctx.stroke();
+    } else {
+      ctx.fillStyle = C.muted;
+      for (var s = 0; s < 18; s++){
+        ctx.beginPath(); ctx.arc(rnd(s) * W, 8 + rnd(s + 50) * 64, 1, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.beginPath(); ctx.arc(W * 0.6, 30, 8, 0, Math.PI * 2);
+      ctx.fillStyle = C.card; ctx.fill(); ctx.strokeStyle = C.muted; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+
+    var d0 = Math.max(0, Math.floor(left / STEP) * STEP), d1 = Math.min(TOTAL, Math.ceil((left + winM) / STEP) * STEP);
+    if (d1 > d0){
+      ctx.beginPath(); ctx.moveTo(X(d0), H - strip);
+      for (var d = d0; d <= d1; d += STEP) ctx.lineTo(X(d), Y(altAt(d)));
+      ctx.lineTo(X(d1), H - strip); ctx.closePath();
+      ctx.fillStyle = C.line; ctx.fill();
+      // 달린 길은 실선, 달리지 않은 길은 점선
+      var ridge = function(a, b, dash){
+        if (b <= a) return;
+        ctx.beginPath();
+        for (var q = a; q <= b; q += STEP){ if (q === a) ctx.moveTo(X(q), Y(altAt(q))); else ctx.lineTo(X(q), Y(altAt(q))); }
+        ctx.setLineDash(dash ? [2, 5] : []);
+        ctx.strokeStyle = C.muted; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke(); ctx.setLineDash([]);
+      };
+      ridge(d0, Math.min(d1, END), false); ridge(Math.max(d0, END), d1, true);
+    }
+
+    if (raining){
+      ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.beginPath();
+      var drift = (performance.now() / 6) % 40;
+      for (var r = 0; r < 46; r++){
+        var rx = (r * 61 % 100) / 100 * (W + 40) - 20, ry = ((r * 37 % 100) / 100 * (H - strip) + drift * (1 + r % 3)) % (H - strip);
+        ctx.moveTo(rx, ry); ctx.lineTo(rx - 4, ry + 10);
+      }
+      ctx.stroke();
+    }
+
+    D.chapters.forEach(function(c){
+      if (/추월/.test(c.label) || c.d === 0) return;
+      var x = X(c.d);
+      if (x < 0 || x > W) return;
+      var span = winM * 60 / W;
+      var gy = Math.max(Y(altAt(c.d - span)), Y(altAt(c.d)), Y(altAt(c.d + span)));
+      pill(ctx, c.label, x, gy + 20, W);
+    });
+
+    var low = altAt(dMe) < (ALT_MIN + ALT_MAX) / 2;
+    var edgeY = low ? 16 : H - strip - 16, nL = 0, nR = 0, dir = low ? 1 : -1;
+    var drawRunner = function(y, lift, d, me, dashed){
+      var x = X(d);
+      if (x < 8 || x > W - 8){
+        var gapKm = Math.abs(d - dMe) / 1000;
+        if (x > W - 8){ pill(ctx, y + ' · ' + gapKm.toFixed(1) + 'km 앞 →', W - 4, edgeY + dir * 24 * nR, W, 'right'); nR++; }
+        else { pill(ctx, '← ' + y + ' · ' + gapKm.toFixed(1) + 'km 뒤', 4, edgeY + dir * 24 * nL, W, 'left'); nL++; }
+        return;
+      }
+      var gy = Y(altAt(d)) - 8;
+      ctx.beginPath(); ctx.moveTo(x, gy - 7); ctx.lineTo(x, gy - lift + 10);
+      ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, gy, 6, 0, Math.PI * 2);
+      if (me){ ctx.fillStyle = C.accent; ctx.fill(); }
+      else {
+        if (dashed) ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = C.text; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+      }
+      pill(ctx, y, x, gy - lift, W);
+    };
+    for (var gi = GHOSTS.length - 1; gi >= 0; gi--){
+      var g = ghost(GHOSTS[gi], t);
+      if (g.on) drawRunner(GHOSTS[gi], 46 + 22 * gi, g.d, false, !g.sec && inDiff(GHOSTS[gi], g.d));
+    }
+    drawRunner(ME, 24, dMe, true, false);
+
+    ctx.fillStyle = C.card; ctx.fillRect(0, H - strip, W, strip);
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, H - strip + 0.5); ctx.lineTo(W, H - strip + 0.5); ctx.stroke();
+    ctx.font = '12px system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif';
+    ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    var every = (1000 / winM * W) < 48 ? 2 : 1;
+    for (var k = Math.max(0, Math.ceil(left / 1000)); k * 1000 <= Math.min(TOTAL, left + winM); k++){
+      if (k % every) continue;
+      var kx = X(k * 1000);
+      if (kx < 20 || kx > W - 20) continue;
+      ctx.fillText(k + 'km', kx, H - strip / 2 + 1);
+    }
+  }
+
+  function drawMini(){
+    var f = fit(mini), ctx = f.ctx, W = f.W, H = f.H;
+    var X = function(d){ return d / TOTAL * W; };
+    var Y = function(a){ return H - 4 - (a - ALT_MIN) / (ALT_MAX - ALT_MIN) * (H - 22); };
+    var dMe = posAt(ME, t);
+    ctx.clearRect(0, 0, W, H);
+    var area = function(to, color){
+      ctx.beginPath(); ctx.moveTo(0, H);
+      for (var i = 0; i < N && i * STEP <= to; i += 3) ctx.lineTo(X(i * STEP), Y(ALT[i]));
+      ctx.lineTo(X(to), Y(altAt(to))); ctx.lineTo(X(to), H); ctx.closePath();
+      ctx.fillStyle = color; ctx.fill();
+    };
+    area(TOTAL, C.line); area(dMe, C.muted);
+    ctx.strokeStyle = C.text; ctx.lineWidth = 1;
+    D.chapters.forEach(function(c){
+      var x = Math.max(0.5, Math.min(W - 0.5, Math.round(X(c.d)) + 0.5));
+      ctx.beginPath(); ctx.moveTo(x, H - 8); ctx.lineTo(x, H); ctx.stroke();
+    });
+    GHOSTS.forEach(function(y){
+      // 구간 유령이 나타나는 길은 위쪽에 가는 줄로 표시
+      (RUNS[y].sections || []).forEach(function(s){
+        ctx.beginPath(); ctx.moveTo(X(s.a), 2); ctx.lineTo(Math.max(X(s.a) + 2, X(s.b)), 2);
+        ctx.strokeStyle = C.text; ctx.lineWidth = 2; ctx.stroke();
+      });
+      var g = ghost(y, t);
+      if (!g.on) return;
+      ctx.beginPath(); ctx.arc(Math.max(4, Math.min(W - 4, X(g.d))), Y(altAt(g.d)) - 5, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = C.card; ctx.fill(); ctx.strokeStyle = C.text; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+    // 사진이 있는 자리는 위쪽에 작은 네모
+    ctx.strokeStyle = C.text; ctx.lineWidth = 1;
+    SHOTS.forEach(function(s){ ctx.strokeRect(Math.round(X(s.d)) - 1.5, 6.5, 3, 3); });
+    ctx.beginPath(); ctx.arc(Math.max(4, Math.min(W - 4, X(dMe))), Y(altAt(dMe)) - 5, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = C.accent; ctx.fill();
+  }
+
+  function setText(id, v){ var el = $(id); if (el.textContent !== v) el.textContent = v; }
+  function readout(){
+    var dMe = posAt(ME, t), tMe = Math.min(t, MY_END);
+    setText('place', km(dMe) + ' · 고도 ' + Math.round(altAt(dMe)).toLocaleString('ko-KR') + 'm');
+    setText('clock', clockText(tMe) + ' · 출발 뒤 ' + hms(tMe));
+    var cap = '';
+    D.chapters.forEach(function(c){ if (Math.abs(c.d - dMe) <= 500 && c.d > 0) cap = c.label; });
+    if (t >= MY_END) cap = DNF ? '멈춤' : '결승';
+    setText('cap', cap);
+    var hr = hrAt(ME, dMe);
+    setText('r' + ME, t >= MY_END ? (DNF ? km(END) + '에서 멈춤 ' : '결승 ') + hms(MY_END) : hr == null ? '달리는 중' : '심박 ' + hr);
+    GHOSTS.forEach(function(y){
+      var g = ghost(y, t), txt, note;
+      if (g.on && g.sec){
+        txt = gapText(g.gap);
+        note = kmRange(g.sec) + ' 구간' + (g.meOut ? ' 결과' : g.done ? ' · 먼저 지나감' : ' · 약 ' + (Math.abs(g.d - dMe) / 1000).toFixed(1) + 'km');
+      } else if (g.over){
+        txt = km(RUNS[y].end) + '에서 기록 끝'; note = '';
+      } else if (g.on){
+        txt = g.gap == null ? '뒤에서 달리는 중' : gapText(g.gap);
+        note = g.done ? '결승 ' + hms(RUNS[y].elapsed) : '약 ' + (Math.abs(g.d - dMe) / 1000).toFixed(1) + 'km';
+        if (g.diff) note += ' · 이 구간 코스 다름';
+      } else {
+        txt = g.next ? km(g.next.a) + '에서 만남' : '더 겹치는 길 없음';
+        note = g.prev ? '지난 구간 ' + gapText(secResult(y, g.prev)) : '';
+      }
+      setText('r' + y, txt); setText('n' + y, note);
+    });
+    if (!dragging){
+      var v = String(Math.round(dMe / STEP) * STEP);
+      if (seek.value !== v) seek.value = v;
+    }
+    seek.setAttribute('aria-valuetext', km(dMe));
+    setText('play', playing ? '멈춤' : (t >= T_END ? '다시 보기' : '재생'));
+  }
+  // 지금 보여 줄 사진: 재생 중에는 그 자리를 지난 뒤 3초쯤, 멈춰 있을 때는 150m 안의 가장 가까운 것
+  function shotNow(){
+    var dMe = posAt(ME, t), best = null, i, s;
+    if (playing){
+      var hold = 3.2 * MY_END / (+$('speed').value);
+      for (i = 0; i < SHOTS.length; i++){
+        s = SHOTS[i];
+        if (s.d > END) continue;
+        var ts = timeAt(ME, s.d);
+        if (t >= ts && t < ts + hold) best = s;
+      }
+    } else {
+      var near = 150;
+      for (i = 0; i < SHOTS.length; i++){
+        s = SHOTS[i];
+        if (Math.abs(s.d - dMe) <= near){ near = Math.abs(s.d - dMe); best = s; }
+      }
+    }
+    return best;
+  }
+  function showShot(){
+    var s = shotNow();
+    if (s === shown) return;
+    shown = s;
+    if (s){ $('shotimg').src = s.el.src; $('shotcap').textContent = s.cap; }
+    $('shot').classList.toggle('on', !!s);
+  }
+  function render(){ drawScene(); drawMini(); readout(); showShot(); }
+
+  function tick(now){
+    if (!playing) return;
+    var dt = Math.min(0.1, (now - last) / 1000); last = now;
+    t += dt * (MY_END / (+$('speed').value));
+    if (t >= T_END){ t = T_END; playing = false; }
+    render();
+    if (playing) requestAnimationFrame(tick);
+  }
+  function play(){ if (t >= T_END) t = 0; playing = true; last = performance.now(); requestAnimationFrame(tick); render(); }
+  function pause(){ playing = false; render(); }
+  function seekTo(d){ t = timeAt(ME, Math.max(0, Math.min(END, d))); render(); }
+
+  [ME].concat(GHOSTS).forEach(function(y){
+    var li = document.createElement('li'), add = function(cls, id, text){
+      var s = document.createElement('span');
+      if (cls) s.className = cls; if (id) s.id = id; if (text) s.textContent = text;
+      li.appendChild(s); return s;
+    };
+    add(y === ME ? 'mark me' : 'mark').setAttribute('aria-hidden', 'true');
+    add('who', '', y); add('', 'r' + y);
+    if (y !== ME) add('note', 'n' + y);
+    $('rows').appendChild(li);
+  });
+
+  $('play').addEventListener('click', function(){ if (playing) pause(); else play(); }, on);
+  seek.max = String(TOTAL);    // 전체 코스 그림과 눈금을 맞춘다. 내가 닿은 곳(END)보다 뒤로는 못 간다
+  seek.addEventListener('input', function(){ if (+seek.value > END) seek.value = String(END); seekTo(+seek.value); }, on);
+  seek.addEventListener('pointerdown', function(){ dragging = true; }, on);
+  window.addEventListener('pointerup', function(){ dragging = false; }, on);
+  var miniSeek = function(e){ var r = mini.getBoundingClientRect(); seekTo((e.clientX - r.left) / r.width * TOTAL); };
+  mini.addEventListener('pointerdown', function(e){ mini.setPointerCapture(e.pointerId); miniSeek(e); }, on);
+  mini.addEventListener('pointermove', function(e){ if (e.buttons || e.pointerType === 'touch') miniSeek(e); }, on);
+  document.addEventListener('keydown', function(e){
+    if (e.code === 'Space' && !/^(BUTTON|SELECT|INPUT)$/.test(e.target.tagName)){ e.preventDefault(); if (playing) pause(); else play(); }
+  }, on);
+
+  D.chapters.forEach(function(c){
+    if (c.d === 0) return;
+    var b = document.createElement('button'); b.type = 'button';
+    b.textContent = c.label + ' ' + (c.d / 1000).toFixed(c.d % 1000 ? 1 : 0) + 'km';
+    b.addEventListener('click', function(){ seekTo(c.d - 400); if (!playing) play(); });
+    $('chips').appendChild(b);
+  });
+
+  readTokens();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){ readTokens(); render(); }, on);
+  if (window.ResizeObserver){
+    var ro = new ResizeObserver(function(){ render(); }); ro.observe(scene);
+    signal.addEventListener('abort', function(){ ro.disconnect(); });
+  } else window.addEventListener('resize', render, on);
+  signal.addEventListener('abort', function(){ playing = false; $('shot').classList.remove('on'); });
+  SHOTS.forEach(function(s){
+    s.el.addEventListener('click', function(){ pause(); seekTo(s.d); $('scene').scrollIntoView({block: 'nearest'}); }, on);
+  });
+  render();
+  return {seek: seekTo, play: play, pause: pause, state: function(){ return {t: t, playing: playing, race: D.slug}; }};
+  }
+
+  function show(slug){
+    var D = ALL[0];
+    ALL.forEach(function(r){ if (r.slug === slug) D = r; });
+    if (current === D.slug) return;
+    current = D.slug;
+    if (live) live.abort();
+    live = new AbortController();
+    $('rows').textContent = ''; $('chips').textContent = '';
+    [].forEach.call(document.querySelectorAll('.race'), function(el){ el.classList.toggle('on', el.id === 'race-' + D.slug); });
+    [].forEach.call($('races').children, function(b){
+      var sel = b.dataset.slug === D.slug;
+      b.classList.toggle('on', sel); b.setAttribute('aria-pressed', sel ? 'true' : 'false');
+      if (sel && b.scrollIntoView) b.scrollIntoView({block: 'nearest', inline: 'nearest'});
+    });
+    $('rtag').textContent = D.tagline;
+    var api = mount(D, live.signal);
+    api.race = show;
+    window.__ghost = api;
+    try { history.replaceState(null, '', '#' + D.slug); } catch (e) {}
+  }
+
+  ALL.forEach(function(r){
+    var b = document.createElement('button'); b.type = 'button';
+    b.textContent = r.short; b.dataset.slug = r.slug;
+    b.addEventListener('click', function(){ show(r.slug); });
+    $('races').appendChild(b);
+  });
+  if (ALL.length < 2) $('races').hidden = true;
+  document.documentElement.classList.add('js');
+  show(decodeURIComponent(location.hash.slice(1)));
+  window.addEventListener('hashchange', function(){ show(decodeURIComponent(location.hash.slice(1))); });
+})();
+</script>
+</body>
+</html>

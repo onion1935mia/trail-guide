@@ -15,7 +15,7 @@
   }
 }
 
-html { background: var(--bg); }
+html { background: var(--bg); scroll-behavior: smooth; }
 body {
   margin: 0;
   padding: 32px 20px 80px;
@@ -39,29 +39,85 @@ strong { font-weight: 600; }
 .note { border-left: 3px solid var(--accent); background: var(--card); color: var(--muted); padding: 10px 14px; margin: 16px 0; font-size: 14px; }
 .note p:last-child { margin-bottom: 0; }
 
+/* 뱃지: 종류를 색이 아니라 테두리 모양과 앞의 선 모양으로 나눈다. 글자가 항상 있다. */
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 1.5; padding: 2px 8px; background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 7px; white-space: nowrap; }
+/* 상태: 고도 그림의 범례와 같은 선 모양 */
+.badge-state::before { content: ""; flex: 0 0 auto; width: 16px; border-top: 4px solid var(--accent); }
+.badge-now { font-weight: 600; }
+.badge-past::before { border-top: 2px solid var(--muted); }
+.badge-gap { color: var(--muted); }
+.badge-gap::before { border-top: 3px dotted var(--text); }
+/* 노면: 각진 실선 테두리 */
+.badge-surface { border-color: var(--muted); border-radius: 4px; }
+/* 조건(밤, 비): 둥근 점선 테두리 */
+.badge-cond { border: 1px dashed var(--muted); border-radius: 14px; }
+.surface-row { margin: 0 0 12px; }
+
 /* 고도 그림 */
 .fig { margin: 16px 0 8px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px; }
-.fig img { display: block; width: 100%; height: auto; }
+.fig img, .fig svg.profile { display: block; width: 100%; height: auto; }
 figcaption { color: var(--muted); font-size: 14px; padding: 6px 8px 4px; }
+/* 그림에서 가리킨 구간의 이름, 거리, 오르막이 뜨는 줄. 마우스가 있는 기기에서는 두 줄 자리를 잡아 두어 아래 글이 움직이지 않게 한다. */
+.readout { margin: 0; padding: 0 8px 4px; font-size: 14px; }
+@media (hover: hover) {
+  .readout { min-height: 56px; }
+}
 .cps { list-style: none; margin: 8px 0 16px; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; font-size: 14px; color: var(--muted); }
 .cps b { font-weight: 600; color: var(--text); }
 
-/* 구간 표 */
-table { width: 100%; border-collapse: collapse; overflow-wrap: break-word; font-size: 15px; line-height: 1.6; margin: 12px 0 8px; }
-th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--line); }
-thead th { font-size: 13px; font-weight: 600; color: var(--muted); }
-tbody th { font-weight: 600; width: 34%; }
-td.km { white-space: nowrap; width: 16%; }
-.range { display: block; font-size: 13px; font-weight: 400; color: var(--muted); }
-.seg-note { display: block; margin-top: 4px; }
+/* 그림에서 누르는 구간 영역: 평소에는 안 보이고, 올리거나 초점이 가거나 누르면 테두리가 생긴다 */
+.seg-hit { cursor: pointer; }
+.seg-hit:focus-visible { outline: none; }
+.seg-glow { fill: transparent; stroke: none; }
+.seg-hit:hover .seg-glow, .seg-hit:focus-visible .seg-glow, .seg-hit.is-hot .seg-glow { stroke: var(--accent); stroke-width: 4; }
+.seg-hit:focus-visible .seg-glow { stroke-width: 8; }
 
-/* 길 표시: 그림의 범례와 같은 선 모양을 글자 앞에 둔다 */
-.way { display: block; padding-left: 26px; position: relative; }
-.way::before { content: ""; position: absolute; left: 0; top: 0.8em; width: 18px; border-top: 4px solid var(--accent); }
-.way.past::before { border-top: 2px solid var(--muted); }
-.way.gap { color: var(--muted); }
-.way.gap::before { border-top: 3px dotted var(--text); }
-.way.now { font-weight: 600; }
+/* 구간 카드 */
+.segs { display: grid; gap: 10px; margin: 12px 0 8px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px 16px 14px; scroll-margin-top: 72px; }
+.card:hover, .card:focus-visible, .card.is-hot { border-color: var(--accent); }
+.card.is-picked, .card:target { border: 2px solid var(--accent); padding: 3px 15px 13px; }
+.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card-title { margin: 0; font-size: 16px; line-height: 1.5; }
+.card-title a { display: flex; align-items: center; min-height: 44px; color: inherit; text-decoration: none; }
+.card-title a:hover, .card-title a:focus-visible { text-decoration: underline; }
+.card-km { margin: 0 0 8px; font-size: 14px; color: var(--muted); }
+.range { margin-left: 6px; }
+.card p:last-child { margin-bottom: 0; }
+.seg-past, .gap { margin: 0 0 8px; font-size: 15px; }
+.gap { color: var(--muted); }
+.seg-note { margin: 0 0 8px; padding-left: 10px; border-left: 3px solid var(--accent); }
+
+/* 오르막·내리막 막대: 숫자가 항상 옆에 있다. 인쇄에서도 나오게 배경이 아니라 테두리로 그린다. */
+.bars { display: grid; gap: 4px; margin: 0 0 10px; font-size: 14px; }
+.bar { display: grid; grid-template-columns: 52px 1fr 64px; gap: 8px; align-items: center; }
+.bar-name { color: var(--muted); }
+.bar-track { display: block; height: 10px; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.bar-fill { display: block; width: var(--w); border-top: 8px solid var(--accent); }
+.bar-down .bar-fill { border-top-color: var(--muted); }
+.bar-num { text-align: right; font-variant-numeric: tabular-nums; }
+.bar-basis { margin: 0; font-size: 13px; color: var(--muted); }
+
+/* 카드를 읽는 동안 화면 위에 붙는 띠. 스크립트가 지금 읽는 구간을 표시한다. */
+.strip-wrap { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 4px 0; border-bottom: 1px solid var(--line); }
+html:not(.js) .strip-wrap { display: none; }
+.strip { display: block; width: 100%; height: 28px; }
+.strip-area { fill: var(--line); stroke: none; }
+.strip-now { fill: none; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.strip-past { fill: none; stroke: var(--muted); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.strip-seg { fill: transparent; stroke: none; vector-effect: non-scaling-stroke; }
+.strip-seg.is-hot { stroke: var(--accent); stroke-width: 1; }
+.strip-seg.is-current { stroke: var(--accent); stroke-width: 3; }
+.strip-label { margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 화면에 들어올 때 나타나는 효과: 짧고 약하게. 쉬는 상태는 항상 "보임"이다.
+   스크립트가 "화면에 들어왔다"고 알릴 때(.in)만 한 번 움직인다. 그 알림이 늦거나 오지 않아도 카드는 그대로 보인다. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.js .reveal.in { animation: rise .2s ease-out; }
 
 .four { margin: 12px 0; padding: 0; list-style: none; display: grid; gap: 10px; }
 .four li { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
@@ -73,22 +129,19 @@ td.km { white-space: nowrap; width: 16%; }
 footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
 footer p { margin: 0 0 6px; }
 
-@media (max-width: 900px) {
-  th, td { word-break: normal; overflow-wrap: anywhere; }
-}
 @media (max-width: 700px) {
   h1 { font-size: 24px; }
-  /* 좁은 화면: 표의 한 줄을 위아래로 쌓는다 */
-  table, tbody, tr, th, td { display: block; width: auto; }
-  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  tbody tr { padding: 12px 0; border-bottom: 1px solid var(--line); }
-  tbody th, td, td.km { padding: 0; border: 0; width: auto; }
-  tbody th .range { display: inline; margin-left: 6px; }
-  td.km { color: var(--muted); font-size: 14px; margin-bottom: 4px; }
   .cps { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .js .reveal.in { animation: none; }
 }
 @media print {
   body { padding: 0; }
-  .fig, .four li, .linkbox { break-inside: avoid; }
+  .strip-wrap { display: none; }
+  .readout { display: none; }
+  .js .reveal.in { animation: none; }
+  .fig, .card, .four li, .linkbox { break-inside: avoid; }
   a { color: inherit; }
 }
